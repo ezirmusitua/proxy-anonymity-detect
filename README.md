@@ -47,9 +47,9 @@ print(detector.anonymity)      # ['distorting']
 # use DetectorRequest to detect framework request
 ## set field  
 request = DetectorRequest()
-request.remote_addr = '128.101.101.101';
-request.http_via = '128.101.101.101';
-request.http_x_forwarded_for = '128.101.101.101';
+request.remote_addr = '128.101.101.101'
+request.http_via = '128.101.101.101'
+request.http_x_forwarded_for = '128.101.101.101'
 ## use dict to init
 request = DetectorRequest({
     'REMOTE_ADDR': '128.101.101.102',
