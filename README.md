@@ -1,4 +1,5 @@
 ## Proxy Anonymity Detector
+[![travis ci](https://travis-ci.org/ezirmusitua/proxy-anonymity-detector.svg?branch=master)](https://travis-ci.org/ezirmusitua/proxy-anonymity-detector)[![Coverage Status](https://coveralls.io/repos/github/ezirmusitua/proxy-anonymity-detector/badge.svg?branch=master)](https://coveralls.io/github/ezirmusitua/proxy-anonymity-detector?branch=master)[![codebeat badge](https://codebeat.co/badges/1bd900a8-4bc3-48b9-bccb-3747061ae910)](https://codebeat.co/projects/github-com-ezirmusitua-proxy-anonymity-detector-master)
 Detect the proxy's anonymity  
   
 ### Features   
