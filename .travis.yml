@@ -1,0 +1,10 @@
+language: python
+python:
+  - "3.6"
+install:
+  - pip install coverage python-coveralls
+script:
+  - coverage run tests.py # or py.test for Python versions 3.5 and below
+after_success:
+  - coveralls
+ 
