@@ -4,7 +4,7 @@ python:
 install:
   - pip install coverage python-coveralls
 script:
-  - coverage run tests.py # or py.test for Python versions 3.5 and below
+  - coverage run tests.py
 after_success:
   - coveralls
  

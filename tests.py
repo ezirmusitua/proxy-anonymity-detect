@@ -21,7 +21,7 @@ class TestProxyAnonymityDetector(unittest.TestCase):
         detector = AnonymityDetector({
             'REMOTE_ADDR': '128.101.101.102',
             'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.101.101'
+            'HTTP_X_FORWARDED_FOR': '128.101.101.101'
         })
         self.assertEqual(detector.using_proxy, 'yes')
         self.assertEqual(detector.anonymity, ['transparent'])
@@ -30,7 +30,7 @@ class TestProxyAnonymityDetector(unittest.TestCase):
         detector = AnonymityDetector({
             'REMOTE_ADDR': '128.101.101.102',
             'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.101.102'  # pass single proxy, if 2 like '128.101.101.103, 128.101.101.102'
+            'HTTP_X_FORWARDED_FOR': '128.101.101.102'  # pass single proxy, if 2 like '128.101.101.103, 128.101.101.102'
         })
         self.assertEqual(detector.using_proxy, 'yes')
         self.assertEqual(detector.anonymity, ['anonymous'])
@@ -39,7 +39,7 @@ class TestProxyAnonymityDetector(unittest.TestCase):
         detector = AnonymityDetector({
             'REMOTE_ADDR': '128.101.101.102',
             'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.102.101, 128.101.201.101'
+            'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
         })
         self.assertEqual(detector.using_proxy, 'yes')
         self.assertEqual(detector.anonymity, ['distorting'])
@@ -48,23 +48,16 @@ class TestProxyAnonymityDetector(unittest.TestCase):
         request_1 = DetectorRequest({
             'REMOTE_ADDR': '128.101.101.102',
             'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.102.101, 128.101.201.101'
-        })
-        request_2 = DetectorRequest.from_dict({
-            'REMOTE_ADDR': '128.101.101.102',
-            'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.102.101, 128.101.201.101'
+            'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
         })
         anonymity_1 = AnonymityDetector(request_1)
-        anonymity_2 = AnonymityDetector(request_2)
         self.assertEqual(anonymity_1, ['distorting'])
-        self.assertEqual(anonymity_1, anonymity_2)
 
     def test_detector_request_from_bottle(self):
         mock_bottle_request = {
             'REMOTE_ADDR': '128.101.101.102',
             'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.102.101, 128.101.201.101'
+            'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
         }
         request = DetectorRequest.from_bottle(mock_bottle_request)
         anonymity_1 = AnonymityDetector(request)
@@ -74,7 +67,7 @@ class TestProxyAnonymityDetector(unittest.TestCase):
         mock_flask_request = {
             'REMOTE_ADDR': '128.101.101.102',
             'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.102.101, 128.101.201.101'
+            'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
         }
         request = DetectorRequest.from_flask(mock_flask_request)
         anonymity_1 = AnonymityDetector(request)
@@ -84,7 +77,7 @@ class TestProxyAnonymityDetector(unittest.TestCase):
         request_dict = {
             'REMOTE_ADDR': '128.101.101.102',
             'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARD_FOR': '128.101.102.101, 128.101.201.101'
+            'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
         }
         anonymity_1 = AnonymityDetector.detect(DetectorRequest.from_dict(request_dict))
         anonymity_2 = AnonymityDetector(DetectorRequest.from_dict(request_dict))

@@ -1,6 +1,3 @@
-from typing import List
-
-
 class Detector(object):
     def __init__(self, headers_or_request, real_ip_address=None):
         self._remote_addr = headers_or_request.get('REMOTE_ADDR')
@@ -45,7 +42,7 @@ class Detector(object):
     def using_proxy(self):
         return 'no'
 
-    def detect(self) -> List[str]:
+    def detect(self):
         return ['no']
 
     @classmethod
