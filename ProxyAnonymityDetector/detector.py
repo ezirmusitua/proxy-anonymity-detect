@@ -1,50 +1,41 @@
+from .request import Request
+
+
 class Detector(object):
     def __init__(self, headers_or_request, real_ip_address=None):
-        # TODO: Use Request instance instead of following field
-        self._remote_addr = headers_or_request.get('REMOTE_ADDR')
-        self._http_via = headers_or_request.get('HTTP_VIA')
-        self._http_x_forwarded_for = headers_or_request.get('HTTP_X_FORWARDED_FOR')
+        if not isinstance(headers_or_request, dict) and not isinstance(headers_or_request, Request):
+            raise TypeError('Invalid request type')
+        self.request = Request(headers_or_request) if isinstance(headers_or_request, dict) else headers_or_request
         self._real_ip_address = real_ip_address
-        pass
+        self._anonymity = []
 
     def __unicode__(self):
         return 'detector'
 
     @property
     def remote_addr(self):
-        return self._remote_addr
-
-    @remote_addr.setter
-    def remote_addr(self, value):
-        self._remote_addr = value
+        return self.request.remote_addr
 
     @property
     def http_via(self):
-        return self._http_via
-
-    @http_via.setter
-    def http_via(self, value):
-        self._http_via = value
+        return self.request.via
 
     @property
     def http_x_forwarded_for(self):
-        return self.http_x_forwarded_for
-
-    @http_x_forwarded_for.setter
-    def http_x_forwarded_for(self, value):
-        # handle str/list
-        self.http_x_forwarded_for = value
+        return self.request.x_forwarded_for
 
     @property
     def anonymity(self):
-        return ['no']
+        if not self._anonymity:
+            self._anonymity = Detector.detect(self.request)
+        return self._anonymity
 
     @property
     def using_proxy(self):
         return 'no'
 
     def run(self):
-        return ['no']
+        return Detector.detect(self.request)
 
     @classmethod
     def detect(cls, headers_or_request):
