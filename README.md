@@ -80,7 +80,7 @@ request = DetectorRequest.from_flask(flask.request)
 ## create new detector  
 request = DetectorRequest.from_bottle(bottle.request)
 detector = AnonymityDetector(request)
-print(detector.anonymity)      # ['distorting']  
+print(detector.anonymity)  
 
 ## use class method
 request = DetectorRequest.from_bottle(bottle.request)
