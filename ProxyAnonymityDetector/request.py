@@ -17,6 +17,20 @@ class Request(object):
     def x_forwarded_for(self):
         return self._x_forwarded_for
 
+    def get(self, field_name):
+        if field_name is 'REMOTE_ADDR':
+            return self._remote
+        elif field_name is 'VIA' or field_name is 'HTTP_VIA':
+            return self._via
+        elif field_name is 'X_FORWARDED_FOR' or field_name is 'HTTP_X_FORWARDED_FOR':
+            return self._x_forwarded_for
+        else:
+            raise KeyError('%s is not supported. ' % field_name)
+
+    @classmethod
+    def from_dict(cls, dict_request):
+        return cls(dict_request)
+
     @classmethod
     def from_bottle(cls, bottle_request):
         request_dict = {
@@ -34,7 +48,7 @@ class Request(object):
         request_dict = {
             'REMOTE_ADDR': flask_request.remote_addr,
             'HTTP_VIA': flask_request.headers.http_via,
-            'HTTP_X_FORWARDED_FOR': flask_request.header.http_x_forwarded_for,
+            'HTTP_X_FORWARDED_FOR': flask_request.headers.http_x_forwarded_for,
         }
         return cls(request_dict)
 

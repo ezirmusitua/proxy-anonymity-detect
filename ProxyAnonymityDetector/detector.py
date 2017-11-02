@@ -1,5 +1,6 @@
 class Detector(object):
     def __init__(self, headers_or_request, real_ip_address=None):
+        # TODO: Use Request instance instead of following field
         self._remote_addr = headers_or_request.get('REMOTE_ADDR')
         self._http_via = headers_or_request.get('HTTP_VIA')
         self._http_x_forwarded_for = headers_or_request.get('HTTP_X_FORWARDED_FOR')
@@ -42,9 +43,9 @@ class Detector(object):
     def using_proxy(self):
         return 'no'
 
-    def detect(self):
+    def run(self):
         return ['no']
 
     @classmethod
     def detect(cls, headers_or_request):
-        pass
+        return ['no']

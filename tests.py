@@ -50,28 +50,35 @@ class TestProxyAnonymityDetector(unittest.TestCase):
             'HTTP_VIA': '1.1 128.101.101.102',
             'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
         })
-        anonymity_1 = AnonymityDetector(request_1)
-        self.assertEqual(anonymity_1, ['distorting'])
+        detector = AnonymityDetector(request_1)
+        self.assertEqual(detector.run(), ['distorting'])
 
     def test_detector_request_from_bottle(self):
-        mock_bottle_request = {
-            'REMOTE_ADDR': '128.101.101.102',
-            'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
-        }
-        request = DetectorRequest.from_bottle(mock_bottle_request)
-        anonymity_1 = AnonymityDetector(request)
-        self.assertEqual(anonymity_1, ['distorting'])
+        class MockBottleRequest(object):
+            def __init__(self):
+                self.environ = {'REMOTE_ADDR': '128.101.101.102'}
+                self.headers = {'HTTP_VIA': '1.1 128.101.101.102',
+                                'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'}
+
+        request = DetectorRequest.from_bottle(MockBottleRequest())
+        detector = AnonymityDetector(request)
+        self.assertEqual(detector.run(), ['distorting'])
 
     def test_detector_request_from_flask(self):
-        mock_flask_request = {
-            'REMOTE_ADDR': '128.101.101.102',
-            'HTTP_VIA': '1.1 128.101.101.102',
-            'HTTP_X_FORWARDED_FOR': '128.101.102.101, 128.101.201.101'
-        }
-        request = DetectorRequest.from_flask(mock_flask_request)
-        anonymity_1 = AnonymityDetector(request)
-        self.assertEqual(anonymity_1, ['distorting'])
+        class MockFlaskRequest(object):
+            def __init__(self):
+                self.remote_addr = '128.101.101.102'
+
+                class Headers(object):
+                    def __init__(self):
+                        self.http_via = '1.1 128.101.101.102'
+                        self.http_x_forwarded_for = '128.101.102.101, 128.101.201.101'
+
+                self.headers = Headers()
+
+        request = DetectorRequest.from_flask(MockFlaskRequest())
+        detector = AnonymityDetector(request)
+        self.assertEqual(detector.run(), ['distorting'])
 
     def test_cls_detect(self):
         request_dict = {
