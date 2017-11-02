@@ -10,7 +10,26 @@ class TestProxyAnonymityDetector(unittest.TestCase):
     def test_detect_no_or_elite_proxy(self):
         detector = AnonymityDetector({'REMOTE_ADDR': '128.101.101.101'})
         self.assertEqual(detector.using_proxy, 'probably')
-        self.assertEqual(detector.anonymity, ['no', 'elite'])
+        self.assertEqual(detector.anonymity, ['elite', 'no'])
+
+    def test_detect_no_proxy(self):
+        detector = AnonymityDetector({'REMOTE_ADDR': '128.101.101.101'}, '128.101.101.101')
+        self.assertEqual(detector.using_proxy, 'no')
+        self.assertEqual(detector.anonymity, ['no'])
+
+    def test_detect_elite_proxy(self):
+        detector = AnonymityDetector({'REMOTE_ADDR': '128.101.101.101'}, '128.101.101.102')
+        self.assertEqual(detector.using_proxy, 'yes')
+        self.assertEqual(detector.anonymity, ['elite'])
+
+    def test_detect_transparent_or_anonymous_proxy(self):
+        detector = AnonymityDetector({
+            'REMOTE_ADDR': '128.101.101.102',
+            'HTTP_VIA': '1.1 128.101.101.101, 1.1 128.101.101.102',
+            'HTTP_X_FORWARDED_FOR': '128.101.101.101, 128.101.101.102'
+        })
+        self.assertEqual(detector.using_proxy, 'yes')
+        self.assertEqual(detector.anonymity, ['anonymous', 'transparent'])
 
     def test_detect_transparent_proxy(self):
         detector = AnonymityDetector({

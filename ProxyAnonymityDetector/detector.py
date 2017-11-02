@@ -28,6 +28,7 @@ class Detector(object):
     def anonymity(self):
         if not self._anonymity:
             self._anonymity = Detector.detect(self.request, self._real_ip_address)
+            self._anonymity.sort()
         return self._anonymity
 
     @property
@@ -35,11 +36,14 @@ class Detector(object):
         # empty anonymity list
         if not self.anonymity:
             return 'unknown'
-        if len(self.anonymity) is 1 and self.anonymity[0] == 'no':
-            return 'no'
-        if len(self.anonymity) is 1 and (self.anonymity[0] == 'transparent' or self.anonymity[0] == 'anonymous'):
+        if len(self.anonymity) > 1:
+            if self.anonymity == ['anonymous', 'transparent']:
+                return 'yes'
+            return 'probably'
+        elif len(self.anonymity) and self.anonymity[0] != 'no':
             return 'yes'
-        return 'probably'
+        else:
+            return 'no'
 
     def run(self):
         return Detector.detect(self.request, self._real_ip_address)
