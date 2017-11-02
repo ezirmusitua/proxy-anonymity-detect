@@ -1,9 +1,9 @@
 class Request(object):
     def __init__(self, request_dict):
         self.origin = request_dict
-        self._remote = request_dict['REMOTE_ADDR']
-        self._via = request_dict['HTTP_VIA']
-        self._x_forwarded_for = request_dict['HTTP_X_FORWARDED_FOR']
+        self._remote = request_dict.get('REMOTE_ADDR', '')
+        self._via = request_dict.get('HTTP_VIA', '')
+        self._x_forwarded_for = request_dict.get('HTTP_X_FORWARDED_FOR', '')
 
     @property
     def remote_addr(self):

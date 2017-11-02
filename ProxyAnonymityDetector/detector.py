@@ -27,45 +27,56 @@ class Detector(object):
     @property
     def anonymity(self):
         if not self._anonymity:
-            self._anonymity = Detector.detect(self.request)
+            self._anonymity = Detector.detect(self.request, self._real_ip_address)
         return self._anonymity
 
     @property
     def using_proxy(self):
         # empty anonymity list
-        if not self._anonymity:
+        if not self.anonymity:
             return 'unknown'
-        if len(self._anonymity) is 1 and self._anonymity[0] == 'no':
+        if len(self.anonymity) is 1 and self.anonymity[0] == 'no':
             return 'no'
-        if len(self._anonymity) is 1 and (self._anonymity[0] == 'transparent' or self._anonymity[0] == 'anonymous'):
+        if len(self.anonymity) is 1 and (self.anonymity[0] == 'transparent' or self.anonymity[0] == 'anonymous'):
             return 'yes'
         return 'probably'
 
     def run(self):
-        return Detector.detect(self.request)
+        return Detector.detect(self.request, self._real_ip_address)
 
     @classmethod
     def detect(cls, headers_or_request, real_ip_addr=None):
-        res = list()
-        remote_addr = headers_or_request.get('REMOTE_ADDR')
+        rm_addr = headers_or_request.get('REMOTE_ADDR')
         via_addrs = split_via(headers_or_request.get('HTTP_VIA'))
         x_forwarded_for_addrs = split_x_forwarded_for(headers_or_request.get('HTTP_X_FORWARDED_FOR'))
-        rm_is_ls_p = remote_addr == via_addrs[-1] or remote_addr == x_forwarded_for_addrs[-1]
-        if not x_forwarded_for_addrs[0] and not via_addrs[0] and remote_addr == real_ip_addr:
-            res.append('no')
-        is_lc = via_addrs[0] == x_forwarded_for_addrs[0] == real_ip_addr
-        if is_lc and rm_is_ls_p:
-            res.append('transparent')
-        no_lc_ip = via_addrs[0] == x_forwarded_for_addrs[0] != real_ip_addr
-        if rm_is_ls_p and no_lc_ip:
-            res.append('anonymous')
-        return res
+        no_real_ip = not real_ip_addr
+        rm_is_real = not no_real_ip and real_ip_addr == rm_addr
+        no_via_and_x_forwarded_for = not via_addrs and not x_forwarded_for_addrs
+        if no_real_ip and no_via_and_x_forwarded_for:
+            return ['no', 'elite']
+        if rm_is_real and no_via_and_x_forwarded_for:
+            return ['no']
+        if not rm_is_real and no_via_and_x_forwarded_for:
+            return ['elite']
+        rm_is_last_proxy = rm_addr == via_addrs[-1] == x_forwarded_for_addrs[-1]
+        if no_real_ip and rm_is_last_proxy:
+            return ['transparent', 'anonymous']
+        real_is_first = real_ip_addr == via_addrs[0] == x_forwarded_for_addrs[0]
+        if not no_real_ip and rm_is_last_proxy and real_is_first:
+            return ['transparent']
+        if not no_real_ip and rm_is_last_proxy and not real_is_first:
+            return ['anonymous']
+        return []
 
 
 def split_via(via_str):
+    if not via_str:
+        return None
     addr_with_version_list = via_str.split(', ')
     return [av.split(' ')[1] for av in addr_with_version_list]
 
 
 def split_x_forwarded_for(x_forwarded_for_str):
+    if not x_forwarded_for_str:
+        return None
     return x_forwarded_for_str.split(', ')
