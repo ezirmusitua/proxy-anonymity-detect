@@ -17,39 +17,44 @@ from ProxyAnonymityDetector import Detector as AnonymityDetector, Request as Det
 
   
 # detect anonymity  
-## no proxy without real ip address
+## no or elite proxy
 detector = AnonymityDetector({'REMOTE_ADDR': '128.101.101.101'})
 print(detector.using_proxy)    # probably
 print(detector.anonymity)      # ['no', 'elite']  
 
-## no proxy with real ip address
+## no proxy
 detector = AnonymityDetector({'REMOTE_ADDR': '128.101.101.101'}, real_ip_address='128.101.101.101')
 print(detector.using_proxy)    # no
 print(detector.anonymity)      # ['no']  
 
-# transparent proxy
+## elite proxy
+detector = AnonymityDetector({'REMOTE_ADDR': '128.101.101.101'}, real_ip_address='128.101.101.100')
+print(detector.using_proxy)    # yes
+print(detector.anonymity)      # ['elite']
+
+# transparent or anonymous proxy
 detector = AnonymityDetector({
     'REMOTE_ADDR': '128.101.101.102',
     'HTTP_VIA': '1.1 128.101.101.102',
     'HTTP_X_FORWARD_FOR': '128.101.101.101'
 })
-print(detector.anonymity)      # ['transparent']  
+print(detector.anonymity)      # ['anonymous', 'transparent']  
 
 ## anonymous proxy
 detector = AnonymityDetector({
     'REMOTE_ADDR': '128.101.101.102',
-    'HTTP_VIA': '1.1 128.101.101.102',
-    'HTTP_X_FORWARD_FOR': '128.101.101.102' # pass single proxy, if 2 like '128.101.101.103, 128.101.101.102'
-})
+    'HTTP_VIA': '1.1 128.101.101.101, 1.1 128.101.101.102',
+    'HTTP_X_FORWARD_FOR': '128.101.101.101, 128.101.101.102'
+}, '128.101.101.100)
 print(detector.anonymity)      # ['anonymous']  
 
-## distorting proxy
+## transparent proxy
 detector = AnonymityDetector({
     'REMOTE_ADDR': '128.101.101.102',
-    'HTTP_VIA': '1.1 128.101.101.102',
-    'HTTP_X_FORWARD_FOR': '128.101.102.101, 128.101.201.101'
-})
-print(detector.anonymity)      # ['distorting']
+    'HTTP_VIA': '1.1 128.101.101.100, 1.1 128.101.101.102',
+    'HTTP_X_FORWARD_FOR': '128.101.101.100, 128.101.101.102'
+}, '128.101.101.100')
+print(detector.anonymity)      # ['transparent']
 
 # use DetectorRequest to detect framework request
 ## set field  
@@ -79,7 +84,7 @@ print(detector.anonymity)      # ['distorting']
 
 ## use class method
 request = DetectorRequest.from_bottle(bottle.request)
-print(AnonymityDetector.detect(request, ip_address='128.101.101.101')) # ['distorting']
+print(AnonymityDetector.detect(request, '128.101.101.101'))
 ```  
 
 ### License  
