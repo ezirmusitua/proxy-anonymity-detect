@@ -1,4 +1,4 @@
-from .request import Request
+from ProxyAnonymityDetector.request import Request
 
 
 class Detector(object):
